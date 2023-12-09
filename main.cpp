@@ -25,21 +25,21 @@ std::string convertToHHMM(int minutes) {
 int main(int argc, char** argv) {
     if (argc != 3) {
         std::cerr << "Usage: " << argv[0] << " <00:00> <23:59>" << std::endl;
-        std::cerr << "       " << argv[0] << " <Fajr Time> <Isha Time>" << std::endl;
+        std::cerr << "       " << argv[0] << " <Fajr Time> <Maghrib Time>" << std::endl;
         return 1;
     }
     std::string fajrTime = argv[1]; 
-    std::string ishaTime = argv[2];
+    std::string maghribTime = argv[2];
     
     int fajrMinutes = convertToMinutes(fajrTime);
-    int ishaMinutes = convertToMinutes(ishaTime);
+    int maghribMinutes = convertToMinutes(maghribTime);
     int midnightTime = convertToMinutes("24:00");
     
-    int nightDurationMinutes = (midnightTime - ishaMinutes) + fajrMinutes;
+    int nightDurationMinutes = (midnightTime - maghribMinutes) + fajrMinutes;
     int finalThirdDurationMinutes = std::round(nightDurationMinutes / 3.0);
     
     int finalThirdStartMinutes = fajrMinutes - finalThirdDurationMinutes;
-    int firstThirdEndMinutes = ishaMinutes + finalThirdDurationMinutes;
+    int firstThirdEndMinutes = maghribMinutes + finalThirdDurationMinutes;
     
     std::string finalThirdStart = convertToHHMM(finalThirdStartMinutes);
     std::string firstThirdEnd = convertToHHMM(firstThirdEndMinutes);
