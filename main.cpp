@@ -14,12 +14,24 @@ int convertToMinutes(const std::string& time) {
     return hours * 60 + minutes;
 }
 
-std::string convertToHHMM(int minutes) {
+std::string convertToHHMM(int minutes, bool use24HourFormat = false) {
     int hours = minutes / 60;
     minutes %= 60;
+    
     std::stringstream ss;
     ss << std::setfill('0') << std::setw(2) << hours << ":" << std::setw(2) << minutes;
-    return ss.str();
+
+    if (use24HourFormat) {
+        return ss.str();
+    } else {
+        // Convert to 12-hour format
+        int hour12 = hours % 12;
+        if (hour12 == 0) {
+            hour12 = 12;  // 0 should be represented as 12 in 12-hour format
+        }
+        ss << (hours < 12 ? " AM" : " PM");
+        return ss.str();
+    }
 }
 
 int main(int argc, char** argv) {
@@ -38,13 +50,16 @@ int main(int argc, char** argv) {
     int nightDurationMinutes = (midnightTime - maghribMinutes) + fajrMinutes;
     int finalThirdDurationMinutes = std::round(nightDurationMinutes / 3.0);
     
-    int finalThirdStartMinutes = fajrMinutes - finalThirdDurationMinutes;
     int firstThirdEndMinutes = maghribMinutes + finalThirdDurationMinutes;
-    
-    std::string finalThirdStart = convertToHHMM(finalThirdStartMinutes);
-    std::string firstThirdEnd = convertToHHMM(firstThirdEndMinutes);
+    int middleStartMinutes = (fajrMinutes + maghribMinutes) / 2;
+    int finalThirdStartMinutes = fajrMinutes - finalThirdDurationMinutes;
+
+    std::string finalThirdStart = convertToHHMM(finalThirdStartMinutes, true);
+    std::string middleStart = convertToHHMM(middleStartMinutes, true);
+    std::string firstThirdEnd = convertToHHMM(firstThirdEndMinutes, true);
     
     std::cout << "The first third of the night ends at: " << firstThirdEnd << std::endl;
+    std::cout << "The middle of the night starts at: " << middleStart << std::endl;
     std::cout << "The final third of the night starts at: " << finalThirdStart << std::endl;
     
     return 0;
