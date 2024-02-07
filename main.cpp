@@ -4,63 +4,68 @@
 #include <cmath>
 using namespace std;
 
-int convertToMinutes(const std::string& time) {
-    std::stringstream ss(time);
-    std::string token;
-    std::getline(ss, token, ':');
-    int hours = std::stoi(token);
-    std::getline(ss, token);
-    int minutes = std::stoi(token);
+/**
+ * Function to convert time string to total minutes
+ * @param const string& time
+ * @return int
+*/
+int time_to_minutes(const string& time) {
+    int hours, minutes;
+    char colon;
+    stringstream ss(time);
+    ss >> hours >> colon >> minutes;
     return hours * 60 + minutes;
 }
 
-std::string convertToHHMM(int minutes, bool use24HourFormat = false) {
-    int hours = minutes / 60;
-    minutes %= 60;
-    
-    std::stringstream ss;
-    ss << std::setfill('0') << std::setw(2) << hours << ":" << std::setw(2) << minutes;
-
-    if (use24HourFormat) {
-        return ss.str();
-    } else {
-        // Convert to 12-hour format
-        int hour12 = hours % 12;
-        if (hour12 == 0) {
-            hour12 = 12;  // 0 should be represented as 12 in 12-hour format
-        }
-        ss << (hours < 12 ? " AM" : " PM");
-        return ss.str();
-    }
+/**
+ * Function to convert total minutes back to a time string in "hh:mm" format
+ * @param int minutes
+ * @return string
+ */
+string minutes_to_time(int minutes) {
+    int hours = (minutes / 60) % 24;
+    int mins = minutes % 60;
+    stringstream ss;
+    ss << setw(2) << setfill('0') << hours << ":" << setw(2) << setfill('0') << mins;
+    return ss.str();
 }
 
+
 int main(int argc, char** argv) {
+    // cli error checking
     if (argc != 3) {
-        std::cerr << "Usage: " << argv[0] << " <00:00> <23:59>" << std::endl;
-        std::cerr << "       " << argv[0] << " <Fajr Time> <Maghrib Time>" << std::endl;
+        cerr << "Usage: " << argv[0] << " <Fajr Time (hh:mm)> <Maghrib Time (hh:mm)>" << endl;
         return 1;
     }
-    std::string fajrTime = argv[1]; 
-    std::string maghribTime = argv[2];
     
-    int fajrMinutes = convertToMinutes(fajrTime);
-    int maghribMinutes = convertToMinutes(maghribTime);
-    int midnightTime = convertToMinutes("24:00");
+    // the start and end of the night can be denoted as the time of maghrib until fajr the next day
+    string fajr_time = argv[1]; 
+    string maghrib_time = argv[2];
     
-    int nightDurationMinutes = (midnightTime - maghribMinutes) + fajrMinutes;
-    int finalThirdDurationMinutes = std::round(nightDurationMinutes / 3.0);
+    // get the total time difference, convert times to string, then add the time difference from midnight
+    int maghrib_minutes = time_to_minutes(maghrib_time);
+    int fajr_minutes = time_to_minutes(fajr_time);
+    int midnight_minutes = 24 * 60; // 1440 will denote the time of midnight
+    int total_time_difference = (midnight_minutes - maghrib_minutes) + fajr_minutes;
     
-    int firstThirdEndMinutes = maghribMinutes + finalThirdDurationMinutes;
-    int middleStartMinutes = (fajrMinutes + maghribMinutes) / 2;
-    int finalThirdStartMinutes = fajrMinutes - finalThirdDurationMinutes;
+    // create necesdary partitions from the total time
+    int third = total_time_difference / 3;
+    int half = total_time_difference / 2;
+    
+    // calculate specific times
+    int first_third_of_night = maghrib_minutes + third; // first third of the night - recommended time for isha
+    int middle_of_night = maghrib_minutes + half; // middle of the night - last time to pray isha
+    int final_third_of_night = fajr_minutes - third; // final third of the night - best time for qiyam al-layl
 
-    std::string finalThirdStart = convertToHHMM(finalThirdStartMinutes, true);
-    std::string middleStart = convertToHHMM(middleStartMinutes, true);
-    std::string firstThirdEnd = convertToHHMM(firstThirdEndMinutes, true);
-    
-    std::cout << "The first third of the night ends at: " << firstThirdEnd << std::endl;
-    std::cout << "The middle of the night starts at: " << middleStart << std::endl;
-    std::cout << "The final third of the night starts at: " << finalThirdStart << std::endl;
-    
+    // convert back to string
+    string first_third_time = minutes_to_time(first_third_of_night);
+    string middle_night_time = minutes_to_time(middle_of_night);
+    string final_third_time = minutes_to_time(final_third_of_night);
+
+    // output
+    cout << "\tIsha recommended dealine:    " << first_third_time << endl;
+    cout << "\tIsha deadline:               " << middle_night_time << endl;
+    cout << "\tBest time for Qiyam Al-Layl: " << final_third_time << endl;
+
     return 0;
 }
